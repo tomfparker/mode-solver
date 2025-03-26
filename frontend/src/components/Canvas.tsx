@@ -2,24 +2,80 @@ import React, { useEffect, useRef, useState } from "react";
 import * as fabric from "fabric";
 import "./Canvas.css";
 
-const Canvas = () => {
+const Canvas = ({ onRunSimulation }: { onRunSimulation: () => void }) => {
   const canvasRef = useRef<fabric.Canvas | null>(null);
   const [layers, setLayers] = useState<any[]>([]); // List of added objects
-  const [showModal, setShowModal] = useState(false); // Show/hide modal
-  const [selectedType, setSelectedType] = useState<string>(""); // Selected structure type
+  const [showModal, setShowModal] = useState(false); // Show/hide modal for adding objects
+  const [showSimulationModal, setShowSimulationModal] = useState(false); // Show/hide modal for simulation options
+  const [selectedType, setSelectedType] = useState<string>("Polygon"); // Default structure type
   const [properties, setProperties] = useState<any>({
-    vertices: "",
+    name: "",
+    material: "Custom",
     refractiveIndex: 1,
+    vertices: "",
     center: "",
     radii: "",
   }); // Properties for the selected structure
 
+  // Simulation options
+  const [wavelength, setWavelength] = useState<number>(1550); // Default wavelength in nm
+  const [dx, setDx] = useState<number>(0.001); // Default dx in microns
+  const [dy, setDy] = useState<number>(0.001); // Default dy in microns
+
+  const materialRefractiveIndices: { [key: string]: number } = {
+    Silicon: 3.48,
+    Silica: 1.44,
+    Air: 1.0,
+    Custom: properties.refractiveIndex, // Custom value
+  };
+
   useEffect(() => {
+    // Initialize the Fabric.js canvas
     const canvas = new fabric.Canvas("waveguide-canvas", {
-      backgroundColor: "#f0f0f0",
-      selection: false,
+      backgroundColor: "#ffffff", // White background
+      selection: false, // Disable selection for the grid
     });
     canvasRef.current = canvas;
+
+    // Draw the grid
+    const gridSize = 20; // Grid cell size in pixels
+    const canvasWidth = 600;
+    const canvasHeight = 400;
+
+    for (let i = 0; i < canvasWidth / gridSize; i++) {
+      const x = i * gridSize;
+      canvas.add(
+        new fabric.Line([x, 0, x, canvasHeight], {
+          stroke: "#e0e0e0",
+          selectable: false,
+        })
+      );
+    }
+
+    for (let i = 0; i < canvasHeight / gridSize; i++) {
+      const y = i * gridSize;
+      canvas.add(
+        new fabric.Line([0, y, canvasWidth, y], {
+          stroke: "#e0e0e0",
+          selectable: false,
+        })
+      );
+    }
+
+    // Add scale reference in the bottom-left corner
+    const scaleLine = new fabric.Line([10, canvasHeight - 20, 110, canvasHeight - 20], {
+      stroke: "#000",
+      strokeWidth: 2,
+      selectable: false,
+    });
+    const scaleText = new fabric.Text("100 µm", {
+      left: 115,
+      top: canvasHeight - 30,
+      fontSize: 14,
+      fill: "#000",
+      selectable: false,
+    });
+    canvas.add(scaleLine, scaleText);
 
     return () => {
       canvas.dispose();
@@ -68,10 +124,26 @@ const Canvas = () => {
       canvasRef.current.add(newObject);
       setLayers((prevLayers) => [
         ...prevLayers,
-        { id: newObject.id, type: selectedType, properties: { ...properties }, object: newObject },
+        {
+          id: newObject.id,
+          name: properties.name || `Layer ${prevLayers.length + 1}`,
+          type: selectedType,
+          material: properties.material,
+          refractiveIndex: properties.refractiveIndex,
+          properties: { ...properties },
+          object: newObject,
+        },
       ]);
       setShowModal(false); // Close the modal
     }
+  };
+
+  const handleMaterialChange = (material: string) => {
+    setProperties({
+      ...properties,
+      material,
+      refractiveIndex: materialRefractiveIndices[material],
+    });
   };
 
   const handleReorderLayers = (fromIndex: number, toIndex: number) => {
@@ -101,27 +173,56 @@ const Canvas = () => {
 
   return (
     <div className="canvas-container">
+      {/* Canvas Plotter */}
       <div className="canvas-wrapper">
         <canvas id="waveguide-canvas" width={600} height={400} />
       </div>
+
       <div className="controls">
-        <select
-          value={selectedType}
-          onChange={(e) => {
-            setSelectedType(e.target.value);
-            setShowModal(true); // Show modal when a type is selected
-          }}
+        {/* Plus Button to Add Objects */}
+        <button className="add-button" onClick={() => setShowModal(true)}>
+          +
+        </button>
+
+        {/* Simulation Options Button */}
+        <button
+          className="simulation-button"
+          onClick={() => setShowSimulationModal(true)}
         >
-          <option value="">Select Structure</option>
-          <option value="Polygon">Polygon</option>
-          <option value="Ellipse">Ellipse</option>
-        </select>
+          ⚙
+        </button>
+
+        {/* Run Simulation Button */}
+        <button className="run-button" onClick={onRunSimulation}>
+          ▶
+        </button>
       </div>
 
       {/* Modal for Adding Structures */}
       {showModal && (
         <div className="modal">
-          <h3>Add {selectedType}</h3>
+          <h3>Add Object</h3>
+          <label>
+            Name:
+            <input
+              type="text"
+              value={properties.name}
+              onChange={(e) =>
+                setProperties({ ...properties, name: e.target.value })
+              }
+              placeholder="Enter layer name"
+            />
+          </label>
+          <label>
+            Object Type:
+            <select
+              value={selectedType}
+              onChange={(e) => setSelectedType(e.target.value)}
+            >
+              <option value="Polygon">Polygon</option>
+              <option value="Ellipse">Ellipse</option>
+            </select>
+          </label>
           {selectedType === "Polygon" && (
             <div>
               <label>
@@ -161,20 +262,66 @@ const Canvas = () => {
             </div>
           )}
           <label>
-            Refractive Index:
-            <input
-              type="number"
-              value={properties.refractiveIndex}
-              onChange={(e) =>
-                setProperties({
-                  ...properties,
-                  refractiveIndex: Number(e.target.value),
-                })
-              }
-            />
+            Material:
+            <select
+              value={properties.material}
+              onChange={(e) => handleMaterialChange(e.target.value)}
+            >
+              <option value="Silicon">Silicon</option>
+              <option value="Silica">Silica</option>
+              <option value="Air">Air</option>
+              <option value="Custom">Custom</option>
+            </select>
           </label>
+          {properties.material === "Custom" && (
+            <label>
+              Refractive Index:
+              <input
+                type="number"
+                value={properties.refractiveIndex}
+                onChange={(e) =>
+                  setProperties({
+                    ...properties,
+                    refractiveIndex: Number(e.target.value),
+                  })
+                }
+              />
+            </label>
+          )}
           <button onClick={handleAddObject}>Add</button>
           <button onClick={() => setShowModal(false)}>Cancel</button>
+        </div>
+      )}
+
+      {/* Modal for Simulation Options */}
+      {showSimulationModal && (
+        <div className="modal">
+          <h3>Simulation Options</h3>
+          <label>
+            Wavelength (nm):
+            <input
+              type="number"
+              value={wavelength}
+              onChange={(e) => setWavelength(Number(e.target.value))}
+            />
+          </label>
+          <label>
+            dx (µm):
+            <input
+              type="number"
+              value={dx}
+              onChange={(e) => setDx(Number(e.target.value))}
+            />
+          </label>
+          <label>
+            dy (µm):
+            <input
+              type="number"
+              value={dy}
+              onChange={(e) => setDy(Number(e.target.value))}
+            />
+          </label>
+          <button onClick={() => setShowSimulationModal(false)}>Close</button>
         </div>
       )}
 
@@ -185,7 +332,10 @@ const Canvas = () => {
           <thead>
             <tr>
               <th>#</th>
+              <th>Name</th>
               <th>Type</th>
+              <th>Material</th>
+              <th>Refractive Index</th>
               <th>Actions</th>
             </tr>
           </thead>
@@ -193,7 +343,10 @@ const Canvas = () => {
             {layers.map((layer, index) => (
               <tr key={index}>
                 <td>{index + 1}</td>
+                <td>{layer.name}</td>
                 <td>{layer.type}</td>
+                <td>{layer.material}</td>
+                <td>{layer.refractiveIndex}</td>
                 <td>
                   <button
                     onClick={() => handleReorderLayers(index, index - 1)}

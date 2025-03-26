@@ -1,4 +1,4 @@
-/* Modernized Canvas Styles */
+/* Canvas container */
 .canvas-container {
   display: flex;
   flex-direction: column;
@@ -10,20 +10,28 @@
   padding: 20px;
 }
 
+/* Canvas wrapper */
 .canvas-wrapper {
-  border: 2px solid #ddd;
-  margin-bottom: 20px;
   position: relative;
-  background-color: #fff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #ffffff; /* White background */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
   border-radius: 8px;
+  overflow: hidden; /* Ensure grid lines don't overflow */
+  margin-bottom: 20px; /* Add space below the canvas */
 }
 
+/* Canvas element */
+canvas {
+  display: block;
+  border: none; /* Remove default canvas border */
+}
+
+/* Controls container */
 .controls {
   display: flex;
-  gap: 20px;
-  justify-content: center;
-  margin-bottom: 20px;
+  gap: 15px; /* Add space between buttons */
+  margin-top: 10px;
+  margin-bottom: 20px; /* Add space below the controls */
 }
 
 .controls select {
@@ -85,6 +93,7 @@ label {
   background-color: #0056b3;
 }
 
+/* Modal */
 .modal {
   position: fixed;
   top: 50%;
@@ -96,27 +105,28 @@ label {
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   z-index: 1000;
-  width: 400px;
+  width: 300px;
+  margin-top: 20px; /* Add space between modal elements */
 }
 
 .modal h3 {
   margin-top: 0;
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   color: #333;
 }
 
 .modal label {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 15px; /* Add space between labels and inputs */
   font-size: 0.9rem;
   color: #555;
 }
 
-.modal input {
+.modal input,
+.modal select {
   width: 100%;
   padding: 8px;
   margin-top: 5px;
-  margin-bottom: 15px;
   font-size: 1rem;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -152,9 +162,13 @@ label {
 .layers-table {
   width: 100%;
   max-width: 800px;
-  margin-top: 20px;
+  margin-top: 20px; /* Add space above the layers table */
   border-collapse: collapse;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.layers-table h3 {
+  margin-bottom: 10px; /* Add space below the table heading */
 }
 
 .layers-table table {
@@ -168,6 +182,7 @@ label {
   padding: 10px;
   text-align: left;
   font-size: 0.9rem;
+  border-bottom: 1px solid #ddd;
 }
 
 .layers-table th {
@@ -211,4 +226,67 @@ label {
 .layers-table button:nth-of-type(5) {
   background-color: #28a745;
   color: white;
+}
+
+/* Plus Button */
+.add-button {
+  font-size: 1.5rem;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  display: flex; /* Use flexbox for centering */
+  align-items: center; /* Vertically center the content */
+  justify-content: center; /* Horizontally center the content */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.add-button:hover {
+  background-color: #0056b3;
+}
+
+.add-button:focus {
+  outline: none;
+}
+
+/* Simulation Options Button */
+.simulation-button {
+  font-size: 1.5rem;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background-color: #28a745;
+  color: white;
+  cursor: pointer;
+  display: flex; /* Use flexbox for centering */
+  align-items: center; /* Vertically center the content */
+  justify-content: center; /* Horizontally center the content */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.simulation-button:hover {
+  background-color: #218838;
+}
+
+.run-button {
+  font-size: 1.5rem;
+  width: 50px;
+  height: 50px;
+  border: none;
+  border-radius: 50%;
+  background-color: #e5a2ee;
+  color: white;
+  cursor: pointer;
+  display: flex; /* Use flexbox for centering */
+  align-items: center; /* Vertically center the content */
+  justify-content: center; /* Horizontally center the content */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.run-button:hover {
+  background-color: #e619cb;
 }

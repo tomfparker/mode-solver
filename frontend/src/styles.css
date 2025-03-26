@@ -1,7 +1,6 @@
 .app {
   text-align: center;
   font-family: "Courier New", Courier, monospace; /* Terminal-like font */
-  padding-top: 50px; /* Add space for the header */
 }
   
   .btn {
@@ -13,7 +12,5 @@
     cursor: pointer;
   }
   
-  canvas {
-    border: 2px solid rgb(168, 164, 219);
-  }
+
   
