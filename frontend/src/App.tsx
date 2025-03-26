@@ -38,7 +38,7 @@ const App = () => {
 
   return (
     <div className="app">
-      <h1>EM Mode Solver</h1>
+      <h1>Guide Mode</h1>
       <div className="canvas-container">
         <Canvas onSave={setStructure} /> {/* Canvas for drawing the index profile */}
       </div>
